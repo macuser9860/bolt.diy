@@ -4,8 +4,8 @@ This guide provides step-by-step instructions to deploy `bolt.diy` on Google Clo
 
 ---
 
-Prerequisites**
-1. Google Cloud CLI** installed ([Google Cloud SDK Install Guide](https://cloud.google.com/sdk/docs/install)).
+Prerequisites
+1. Google Cloud CLI installed ([Google Cloud SDK Install Guide](https://cloud.google.com/sdk/docs/install)).
 2. Git installed and configured.
 3. Access to your Google Cloud Project.
 4. Your Google Cloud project ID (e.g., `example-project-id`).
@@ -13,7 +13,7 @@ Prerequisites**
 
 ---
 
-Steps to Deploy**
+Steps to Deploy
 
 1. Clone the Repository
 Ensure you have the latest version of the repository:
@@ -75,7 +75,7 @@ Test the URL in your browser to confirm the service is running.
 
 ---
 
-### **6. Configure a Custom Domain**
+6. Configure a Custom Domain**
 
 If you want to use a custom domain for your service:
 
