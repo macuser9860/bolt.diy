@@ -23,7 +23,7 @@ cd bolt.diy
 
 ---
 
-2. Build and Push the Docker Image to Google Artifact Registry**
+2. Build and Push the Docker Image to Google Artifact Registry
 
 Step 2.1: Create a Docker Repository (if not already created)
 
@@ -52,7 +52,7 @@ Before running the deployment command, update the placeholders in the command:
 
 ---
 
-4. Deploy the Application to Google Cloud Run**
+4. Deploy the Application to Google Cloud Run
 
 Run the following command to deploy the service:
 
@@ -75,7 +75,7 @@ Test the URL in your browser to confirm the service is running.
 
 ---
 
-6. Configure a Custom Domain**
+6. Configure a Custom Domain
 
 If you want to use a custom domain for your service:
 
