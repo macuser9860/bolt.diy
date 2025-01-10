@@ -1,92 +1,39 @@
-ARG BASE=node:20.18.0
-FROM ${BASE} AS base
+FROM ubuntu:24.04 as bolt-ai-production
+
+ENV NODE_VERSION=20.x
+ENV DEBIAN_FRONTEND=noninteractive
+ENV NODE_OPTIONS="--max-old-space-size=2048"
+ENV HOST=0.0.0.0
+
+RUN apt-get update && apt-get install -y \
+    curl \
+    git \
+    build-essential \
+    ca-certificates \
+    && rm -rf /var/lib/apt/lists/*
+
+RUN curl -fsSL https://deb.nodesource.com/setup_${NODE_VERSION} | bash - \
+    && apt-get update \
+    && apt-get install -y nodejs \
+    && npm install -g npm@latest \
+    && npm install -g pnpm
 
 WORKDIR /app
 
-# Install dependencies (this step is cached as long as the dependencies don't change)
-COPY package.json pnpm-lock.yaml ./
+RUN git clone https://github.com/stackblitz-labs/bolt.diy.git .
 
-RUN corepack enable pnpm && pnpm install
+RUN echo "OPENAI_API_KEY=dummy\n\
+NODE_ENV=production\n\
+PORT=5173\n\
+VITE_LOG_LEVEL=debug\n\
+DEFAULT_NUM_CTX=32768\n\
+RUNNING_IN_DOCKER=true" > .env.local
 
-# Copy the rest of your app's source code
-COPY . .
-
-# Expose the port the app runs on
-EXPOSE 5173
-
-# Production image
-FROM base AS bolt-ai-production
-
-# Define environment variables with default values or let them be overridden
-ARG GROQ_API_KEY
-ARG HuggingFace_API_KEY
-ARG OPENAI_API_KEY
-ARG ANTHROPIC_API_KEY
-ARG OPEN_ROUTER_API_KEY
-ARG GOOGLE_GENERATIVE_AI_API_KEY
-ARG OLLAMA_API_BASE_URL
-ARG XAI_API_KEY
-ARG TOGETHER_API_KEY
-ARG TOGETHER_API_BASE_URL
-ARG AWS_BEDROCK_CONFIG
-ARG VITE_LOG_LEVEL=debug
-ARG DEFAULT_NUM_CTX
-
-ENV WRANGLER_SEND_METRICS=false \
-    GROQ_API_KEY=${GROQ_API_KEY} \
-    HuggingFace_KEY=${HuggingFace_API_KEY} \
-    OPENAI_API_KEY=${OPENAI_API_KEY} \
-    ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY} \
-    OPEN_ROUTER_API_KEY=${OPEN_ROUTER_API_KEY} \
-    GOOGLE_GENERATIVE_AI_API_KEY=${GOOGLE_GENERATIVE_AI_API_KEY} \
-    OLLAMA_API_BASE_URL=${OLLAMA_API_BASE_URL} \
-    XAI_API_KEY=${XAI_API_KEY} \
-    TOGETHER_API_KEY=${TOGETHER_API_KEY} \
-    TOGETHER_API_BASE_URL=${TOGETHER_API_BASE_URL} \
-    AWS_BEDROCK_CONFIG=${AWS_BEDROCK_CONFIG} \
-    VITE_LOG_LEVEL=${VITE_LOG_LEVEL} \
-    DEFAULT_NUM_CTX=${DEFAULT_NUM_CTX}\
-    RUNNING_IN_DOCKER=true
-
-# Pre-configure wrangler to disable metrics
-RUN mkdir -p /root/.config/.wrangler && \
-    echo '{"enabled":false}' > /root/.config/.wrangler/metrics.json
+RUN pnpm install
 
 RUN pnpm run build
 
-CMD [ "pnpm", "run", "dockerstart"]
+EXPOSE 5173
 
-# Development image
-FROM base AS bolt-ai-development
+CMD ["pnpm", "run", "dockerstart"]
 
-# Define the same environment variables for development
-ARG GROQ_API_KEY
-ARG HuggingFace 
-ARG OPENAI_API_KEY
-ARG ANTHROPIC_API_KEY
-ARG OPEN_ROUTER_API_KEY
-ARG GOOGLE_GENERATIVE_AI_API_KEY
-ARG OLLAMA_API_BASE_URL
-ARG XAI_API_KEY
-ARG TOGETHER_API_KEY
-ARG TOGETHER_API_BASE_URL
-ARG VITE_LOG_LEVEL=debug
-ARG DEFAULT_NUM_CTX
-
-ENV GROQ_API_KEY=${GROQ_API_KEY} \
-    HuggingFace_API_KEY=${HuggingFace_API_KEY} \
-    OPENAI_API_KEY=${OPENAI_API_KEY} \
-    ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY} \
-    OPEN_ROUTER_API_KEY=${OPEN_ROUTER_API_KEY} \
-    GOOGLE_GENERATIVE_AI_API_KEY=${GOOGLE_GENERATIVE_AI_API_KEY} \
-    OLLAMA_API_BASE_URL=${OLLAMA_API_BASE_URL} \
-    XAI_API_KEY=${XAI_API_KEY} \
-    TOGETHER_API_KEY=${TOGETHER_API_KEY} \
-    TOGETHER_API_BASE_URL=${TOGETHER_API_BASE_URL} \
-    AWS_BEDROCK_CONFIG=${AWS_BEDROCK_CONFIG} \
-    VITE_LOG_LEVEL=${VITE_LOG_LEVEL} \
-    DEFAULT_NUM_CTX=${DEFAULT_NUM_CTX}\
-    RUNNING_IN_DOCKER=true
-
-RUN mkdir -p ${WORKDIR}/run
-CMD pnpm run dev --host
