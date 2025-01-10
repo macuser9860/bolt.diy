@@ -36,7 +36,7 @@ Step 2.2: Authenticate Docker to Use Artifact Registry
 
 gcloud auth configure-docker us-central1-docker.pkg.dev
 
-Step 2.3: Build and Push the Image**
+Step 2.3: Build and Push the Image
 Build and push the image to the Artifact Registry:
 
 gcloud builds submit --tag us-central1-docker.pkg.dev/example-project-id/bolt-diy-repo/bolt-diy
